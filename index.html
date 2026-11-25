@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nebenkostenabrechnung – kostenlose Software für Vermieter</title>
+<meta name="description" content="Zwei kostenlose Programme zur Nebenkostenabrechnung für private Vermieter: die native Rust-App und die Web-/Desktop-Version. Lokal, werbefrei, ohne Abo.">
+<meta property="og:title" content="Nebenkostenabrechnung – kostenlose Software für Vermieter">
+<meta property="og:description" content="Zwei kostenlose Programme zur Nebenkostenabrechnung: native Rust-App und Web-/Desktop-Version. 100 % lokal, werbefrei, ohne Abo.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#fff; --ink:#16181d; --muted:#5c6470;
+    --line:#e3e6ec; --accent:#1f6feb; --accent-dark:#1657bd;
+    --rust:#b7410e; --ok:#12784a; --shadow:0 1px 2px rgba(16,20,28,.06),0 8px 24px rgba(16,20,28,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0f1216; --card:#171b21; --ink:#e9edf2; --muted:#9aa4b2;
+      --line:#262c35; --accent:#4f91ff; --accent-dark:#79aaff;
+      --rust:#e2724a; --ok:#3ecf8e;
+      --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent); text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1060px; margin:0 auto; padding:0 20px}
+  header.site{
+    position:sticky; top:0; z-index:20; backdrop-filter:blur(8px);
+    background:color-mix(in srgb, var(--bg) 85%, transparent);
+    border-bottom:1px solid var(--line);
+  }
+  header.site .wrap{display:flex; align-items:center; gap:18px; height:60px}
+  .brand{font-weight:700; letter-spacing:-.01em; display:flex; align-items:center; gap:9px}
+  .brand svg{width:22px;height:22px}
+  nav.top{margin-left:auto; display:flex; gap:18px; font-size:14.5px}
+  nav.top a{color:var(--muted)}
+  nav.top a:hover{color:var(--ink); text-decoration:none}
+  @media (max-width:640px){ nav.top{display:none} }
+
+  .hero{padding:64px 0 28px}
+  .hero h1{font-size:clamp(30px,5vw,46px); line-height:1.12; letter-spacing:-.025em; margin:0 0 14px}
+  .hero p.lead{font-size:clamp(16px,2vw,19px); color:var(--muted); max-width:62ch; margin:0 0 26px}
+  .badges{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:26px}
+  .pill{font-size:13px; padding:5px 11px; border:1px solid var(--line); border-radius:999px; background:var(--card); color:var(--muted)}
+  .cta{display:flex; flex-wrap:wrap; gap:12px}
+  .btn{
+    display:inline-flex; align-items:center; gap:9px; padding:11px 18px; border-radius:10px;
+    font-weight:600; font-size:15px; border:1px solid transparent; transition:.15s;
+  }
+  .btn.primary{background:var(--accent); color:#fff}
+  .btn.primary:hover{background:var(--accent-dark); text-decoration:none}
+  .btn.ghost{background:var(--card); color:var(--ink); border-color:var(--line)}
+  .btn.ghost:hover{border-color:var(--muted); text-decoration:none}
+
+  section{padding:38px 0}
+  h2{font-size:clamp(21px,3vw,27px); letter-spacing:-.02em; margin:0 0 6px}
+  .sub{color:var(--muted); margin:0 0 22px}
+
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:22px}
+  @media (max-width:820px){ .grid{grid-template-columns:1fr} }
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:16px;
+    box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column;
+  }
+  .card .shot{aspect-ratio:16/10; background:linear-gradient(135deg,#1f2a37,#2f4056); position:relative; overflow:hidden}
+  .card .shot img{width:100%; height:100%; object-fit:cover; object-position:top center; display:block}
+  .card .shot.plain{display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#2b3a4d,#41567a)}
+  .card .shot.plain span{color:#dbe6f5; font-weight:600; letter-spacing:.02em; font-size:15px; opacity:.9}
+  .card .body{padding:20px 22px 22px; display:flex; flex-direction:column; flex:1}
+  .card h3{margin:0 0 4px; font-size:19px; letter-spacing:-.01em}
+  .card .meta{font-size:13px; color:var(--muted); margin-bottom:12px; display:flex; flex-wrap:wrap; gap:8px}
+  .tag{font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; font-weight:700; padding:3px 8px; border-radius:6px}
+  .tag.new{background:color-mix(in srgb, var(--ok) 16%, transparent); color:var(--ok)}
+  .tag.alt{background:color-mix(in srgb, var(--muted) 16%, transparent); color:var(--muted)}
+  .card ul{margin:0 0 18px; padding-left:20px; color:var(--muted); font-size:14.6px}
+  .card ul li{margin:3px 0}
+  .card .dl{margin-top:auto; display:flex; flex-direction:column; gap:9px}
+  .dlrow{display:flex; align-items:center; justify-content:space-between; gap:10px;
+    border:1px solid var(--line); border-radius:10px; padding:9px 12px; font-size:14px}
+  .dlrow .os{font-weight:600}
+  .dlrow .sz{color:var(--muted); font-size:12.5px}
+  .dlrow a{font-weight:600; white-space:nowrap}
+
+  .tablewrap{overflow-x:auto; border:1px solid var(--line); border-radius:14px; background:var(--card); box-shadow:var(--shadow)}
+  table{border-collapse:collapse; width:100%; font-size:14.6px; min-width:560px}
+  th,td{padding:12px 16px; text-align:left; border-bottom:1px solid var(--line)}
+  thead th{font-size:12.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); background:color-mix(in srgb, var(--line) 30%, transparent)}
+  tbody tr:last-child td{border-bottom:none}
+  td:first-child{color:var(--muted)}
+
+  .gallery{display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px}
+  .gallery figure{margin:0; background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; box-shadow:var(--shadow)}
+  .gallery img{width:100%; display:block; aspect-ratio:16/9; object-fit:cover; cursor:zoom-in}
+  .gallery figcaption{padding:8px 12px; font-size:12.8px; color:var(--muted)}
+
+  .note{
+    background:var(--card); border:1px solid var(--line); border-left:4px solid var(--accent);
+    border-radius:10px; padding:16px 18px; font-size:14.6px; color:var(--muted);
+  }
+  .note strong{color:var(--ink)}
+
+  footer.site{border-top:1px solid var(--line); padding:26px 0 40px; color:var(--muted); font-size:14px}
+  footer.site .wrap{display:flex; flex-wrap:wrap; gap:14px; justify-content:space-between}
+  footer.site a{color:var(--muted); text-decoration:underline}
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <span class="brand">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/>
+      </svg>
+      Nebenkostenabrechnung
+    </span>
+    <nav class="top">
+      <a href="#programme">Programme</a>
+      <a href="#vergleich">Vergleich</a>
+      <a href="#screenshots">Screenshots</a>
+      <a href="https://github.com/K-Eckstein">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="hero">
+    <h1>Nebenkostenabrechnung für private Vermieter — kostenlos, lokal, ohne Abo</h1>
+    <p class="lead">
+      Zwei eigenständige Programme, aus der eigenen Vermieter-Praxis entstanden:
+      eine schnelle <strong>native App in Rust</strong> und die ältere
+      <strong>Web-/Desktop-Version</strong>. Beide rechnen nach CO₂KostAufG und HeizkostenV ab,
+      beide speichern alles ausschließlich auf deinem Rechner.
+    </p>
+    <div class="badges">
+      <span class="pill">100 % lokal – keine Cloud, kein Konto</span>
+      <span class="pill">keine Werbung, kein Abo</span>
+      <span class="pill">Windows &amp; Linux</span>
+      <span class="pill">unbegrenzte Objekte &amp; Einheiten</span>
+    </div>
+    <div class="cta">
+      <a class="btn primary" href="#programme">Programm auswählen</a>
+      <a class="btn ghost" href="https://www.paypal.me/KaffekasseNebenkoste">Kaffeekasse</a>
+    </div>
+  </div>
+
+  <section id="programme">
+    <h2>Die beiden Programme</h2>
+    <p class="sub">Für neue Abrechnungen empfehle ich die Rust-App: kleiner, schneller, aktueller Funktionsstand.</p>
+
+    <div class="grid">
+
+      <!-- Rust -->
+      <article class="card">
+        <div class="shot"><img src="assets/shot-1.png" alt="Screenshot der Rust-App: Übersicht der Objekte und Einheiten"></div>
+        <div class="body">
+          <h3>Nebenkostenabrechnung <span class="tag new">aktuell</span></h3>
+          <div class="meta">
+            <span>Version 1.6.0</span><span>·</span><span>native Rust-App</span><span>·</span><span>neu, schlank</span>
+          </div>
+          <ul>
+            <li>CO₂-Aufteilung nach CO2KostAufG inkl. 19 % MwSt.</li>
+            <li>Umlageschlüssel: Fläche, Personen, Verbrauch, Tage, 2-Schlüssel-Mix</li>
+            <li><strong>Zählerwechsel</strong> im laufenden Jahr, Verbrauch wird summiert</li>
+            <li>Mieterwechsel, Leerstand, Rundungsausgleich, Vorauszahlungs-Vorschläge</li>
+            <li>PDF-Anschreiben, CSV-Export, Jahres-ZIP-Archiv, Vermieter-Journal</li>
+          </ul>
+          <div class="dl">
+            <div class="dlrow">
+              <span><span class="os">Windows</span> <span class="sz">· portable EXE · 11,3 MB</span></span>
+              <a href="https://github.com/K-Eckstein/nebenkosten-abrechnung-in-rust/releases/download/1.6.0/Nebenkostenabrechnung-Portable.exe">Herunterladen</a>
+            </div>
+            <div class="dlrow">
+              <span><span class="os">Linux</span> <span class="sz">· AppImage · 8,6 MB</span></span>
+              <a href="https://github.com/K-Eckstein/nebenkosten-abrechnung-in-rust/releases/download/1.6.0/Nebenkostenabrechnung-1.6.0.AppImage">Herunterladen</a>
+            </div>
+            <a class="btn ghost" href="https://github.com/K-Eckstein/nebenkosten-abrechnung-in-rust">Zum Repository &amp; Anleitung</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Electron -->
+      <article class="card">
+        <div class="shot plain"><span>Web &amp; Desktop · Electron</span></div>
+        <div class="body">
+          <h3>Nebenkostenabrechnung <span class="tag alt">erste Version</span></h3>
+          <div class="meta">
+            <span>Version 1.3</span><span>·</span><span>Web-/Desktop-Version</span><span>·</span><span>größerer Download</span>
+          </div>
+          <ul>
+            <li>CO₂-Aufteilung nach CO2KostAufG (Stufenmodell)</li>
+            <li>HeizkostenV: 50/50 bis 70/30 frei einstellbar</li>
+            <li>Pro-rata-Berechnung bei Mieterwechsel und Leerstand</li>
+            <li>Betriebskosten mit eigenen Verteilerschlüsseln</li>
+            <li>PDF-Export für Mieteranschreiben und Finanzamt-Archiv</li>
+          </ul>
+          <div class="dl">
+            <div class="dlrow">
+              <span><span class="os">Windows</span> <span class="sz">· Portable EXE · 117 MB</span></span>
+              <a href="https://github.com/K-Eckstein/Nebenkostenabrechnung-/releases/download/1.3/Nebenkostenabrechnung-Portable.exe">Herunterladen</a>
+            </div>
+            <div class="dlrow">
+              <span><span class="os">Linux</span> <span class="sz">· AppImage · 146 MB</span></span>
+              <a href="https://github.com/K-Eckstein/Nebenkostenabrechnung-/releases/download/1.3/Nebenkostenabrechnung-1.0.0.AppImage">Herunterladen</a>
+            </div>
+            <a class="btn ghost" href="https://github.com/K-Eckstein/Nebenkostenabrechnung-/releases">Zum Repository &amp; Release</a>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section id="vergleich">
+    <h2>Welche Version passt zu dir?</h2>
+    <p class="sub">Beide Programme rechnen lokal und kostenlos – der Unterschied liegt in Technik und Umfang.</p>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>Merkmal</th><th>Rust-App</th><th>Web-/Desktop-Version</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Technik</td><td>nativ in Rust</td><td>HTML/TypeScript, Electron</td></tr>
+          <tr><td>Aktuelle Version</td><td>1.6.0</td><td>1.3</td></tr>
+          <tr><td>Download</td><td>8,6 MB / 11,3 MB</td><td>146 MB / 117 MB</td></tr>
+          <tr><td>Windows &amp; Linux</td><td>portable EXE, AppImage</td><td>portable EXE, AppImage</td></tr>
+          <tr><td>CO₂ nach CO2KostAufG</td><td>✔ inkl. 19 % MwSt.</td><td>✔ Stufenmodell</td></tr>
+          <tr><td>HeizkostenV-Schlüssel</td><td>✔ 2-Schlüssel-Mix</td><td>✔ 50/50–70/30</td></tr>
+          <tr><td>Zählerwechsel</td><td>✔</td><td>–</td></tr>
+          <tr><td>CSV-Export</td><td>✔</td><td>–</td></tr>
+          <tr><td>PDF-Export</td><td>✔</td><td>✔</td></tr>
+          <tr><td>Datenhaltung</td><td>eine lokale Datei</td><td>lokale Daten, kein Cloud-Zwang</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="sub" style="margin-top:14px; font-size:13.6px;">
+      Stand: Version 1.6.0 (Rust) und 1.3 (Web-/Desktop). Beide Programme sind eigenständig – deine Daten wandern nicht automatisch von einer Version in die andere.
+    </p>
+  </section>
+
+  <section id="screenshots">
+    <h2>Screenshots aus der Rust-App</h2>
+    <p class="sub">Objekte, Einheiten, Kostenverteilung, Verbrauch, Abrechnung und Jahresvergleich. Klick auf ein Bild zum Vergrößern.<br>
+      <span style="font-size:13.4px">Aufnahmen aus dem Download-Paket (Programmstand v1.4); Version 1.6.0 bietet zusätzlich den Zählerwechsel im Bereich „Verbrauch“.</span></p>
+    <div class="gallery">
+      <figure><a href="assets/shot-1.png" target="_blank" rel="noopener"><img src="assets/shot-1.png" alt="Objekte und Vermieter verwalten" loading="lazy"></a><figcaption>1 · Objekte &amp; Vermieter</figcaption></figure>
+      <figure><a href="assets/shot-2.png" target="_blank" rel="noopener"><img src="assets/shot-2.png" alt="Wohneinheiten und Mieter" loading="lazy"></a><figcaption>2 · Einheiten &amp; Mieter</figcaption></figure>
+      <figure><a href="assets/shot-3.png" target="_blank" rel="noopener"><img src="assets/shot-3.png" alt="Kostenarten mit Verteilerschlüssel pro Zeile" loading="lazy"></a><figcaption>3 · Kostenarten &amp; Verteilerschlüssel</figcaption></figure>
+      <figure><a href="assets/shot-4.png" target="_blank" rel="noopener"><img src="assets/shot-4.png" alt="Verbrauchsablesung für Heizung und Warmwasser" loading="lazy"></a><figcaption>4 · Verbrauch &amp; Zählerstände</figcaption></figure>
+      <figure><a href="assets/shot-5.png" target="_blank" rel="noopener"><img src="assets/shot-5.png" alt="Abrechnung mit Schnellabrechnung und PDF-Erzeugung" loading="lazy"></a><figcaption>5 · Abrechnung &amp; PDF-Export</figcaption></figure>
+      <figure><a href="assets/shot-6.png" target="_blank" rel="noopener"><img src="assets/shot-6.png" alt="CO₂-Kostenaufteilung nach CO2KostAufG" loading="lazy"></a><figcaption>6 · CO₂-Kostenaufteilung</figcaption></figure>
+      <figure><a href="assets/shot-7.png" target="_blank" rel="noopener"><img src="assets/shot-7.png" alt="Jahresvergleich mit Diagrammen" loading="lazy"></a><figcaption>7 · Jahresvergleich</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Installation in zwei Minuten</h2>
+    <div class="grid">
+      <div class="note">
+        <strong>Windows</strong><br>
+        Datei herunterladen, in einen eigenen Ordner legen, per Doppelklick starten.
+        Beim ersten Start meldet Windows ggf. „Der Computer wurde durch Windows geschützt“ –
+        das ist bei Freeware ohne kostenpflichtiges Entwicklerzertifikat normal:
+        <em>Weitere Informationen → Trotzdem ausführen</em>.
+      </div>
+      <div class="note">
+        <strong>Linux</strong><br>
+        AppImage herunterladen, ausführbar machen
+        (<code>chmod +x Datei.AppImage</code> oder Rechtsklick → Eigenschaften → Ausführbar),
+        dann starten. Keine Installation, keine Systemänderungen.
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Kostenlos – und das bleibt so</h2>
+    <p class="sub" style="margin-bottom:16px">
+      Die Programme sind aus eigener Vermieter-Praxis entstanden, weil Abo-Modelle und überladene
+      Software genervt haben. Es gibt keine Testphase, keine Einheiten-Limits und keine Werbung.
+      Alle Daten liegen in einer einzigen lokalen Datei – einfach per USB-Stick mitnehmbar,
+      ideal für die gesetzliche Aufbewahrungspflicht.
+    </p>
+    <div class="cta">
+      <a class="btn primary" href="https://www.paypal.me/KaffekasseNebenkoste">Freiwillig in die Kaffeekasse</a>
+      <a class="btn ghost" href="mailto:Eckstein-Klaus@Arcor.de">Fehler melden oder Wunsch äußern</a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <span>Nebenkostenabrechnung · Freeware für private Vermieter · Stand Version 1.6.0 / 1.3</span>
+    <span>
+      <a href="https://github.com/K-Eckstein/nebenkosten-abrechnung-in-rust">Rust-App</a> ·
+      <a href="https://github.com/K-Eckstein/Nebenkostenabrechnung-">Web-/Desktop-Version</a> ·
+      <a href="https://github.com/K-Eckstein">GitHub-Profil</a>
+    </span>
+  </div>
+</footer>
+
+</body>
+</html>
