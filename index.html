@@ -112,6 +112,14 @@
   footer.site{border-top:1px solid var(--line); padding:26px 0 40px; color:var(--muted); font-size:14px}
   footer.site .wrap{display:flex; flex-wrap:wrap; gap:14px; justify-content:space-between}
   footer.site a{color:var(--muted); text-decoration:underline}
+
+  /* Seitenaufruf-Zähler (GoatCounter) im Footer */
+  #gcvc{display:inline}
+  #gcvc:not(:empty)::before{content:" · "}
+  #gcvc div{display:inline; padding:0; border:0; background:none; font-size:14px; color:inherit}
+  #gcvc #gcvc-for{font-size:14px; color:var(--muted)}
+  #gcvc #gcvc-views{font-weight:600; color:var(--ink)}
+  #gcvc #gcvc-by{display:none}
 </style>
 </head>
 <body>
@@ -301,7 +309,7 @@
 
 <footer class="site">
   <div class="wrap">
-    <span>Nebenkostenabrechnung · Freeware für private Vermieter · Stand Version 1.6.1 / 1.3</span>
+    <span>Nebenkostenabrechnung · Freeware für private Vermieter · Stand Version 1.6.1 / 1.3<span id="gcvc"></span></span>
     <span>
       <a href="https://github.com/K-Eckstein/nebenkosten-abrechnung-in-rust">Rust-App</a> ·
       <a href="https://github.com/K-Eckstein/Nebenkostenabrechnung-">Web-/Desktop-Version</a> ·
@@ -313,6 +321,17 @@
 <!-- Statistik: GoatCounter (cookielos, ohne personenbezogene Daten) -->
 <script data-goatcounter="https://keckstein.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
+<script>
+  // Sichtbarer Zähler im Footer, sobald count.js geladen ist.
+  (function () {
+    var t = setInterval(function () {
+      if (window.goatcounter && window.goatcounter.visit_count) {
+        clearInterval(t);
+        window.goatcounter.visit_count({append: '#gcvc', type: 'html', no_branding: true});
+      }
+    }, 100);
+  })();
+</script>
 
 </body>
 </html>
